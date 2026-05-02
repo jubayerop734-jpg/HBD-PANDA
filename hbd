@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg: #fff0f6;
+    --primary: #ff4d94;
+    --panda-black: #2f2f2f;
+  }
+
+  body {
+    background-color: var(--bg);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Segoe UI', cursive, sans-serif;
+    overflow: hidden;
+    perspective: 1000px;
+  }
+
+  /* Magical Background Particles */
+  .floating-item {
+    position: absolute;
+    pointer-events: none;
+    animation: floatAnim 6s linear infinite;
+    z-index: 1;
+  }
+  @keyframes floatAnim {
+    0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* The Panda Lock Screen */
+  #lock-screen {
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: 1s;
+  }
+
+  .bamboo-btn {
+    font-size: 50px;
+    cursor: pointer;
+    filter: drop-shadow(0 0 10px rgba(0,255,0,0.3));
+    transition: 0.3s;
+  }
+  .bamboo-btn:hover { transform: scale(1.2); }
+
+  /* Envelope & Card Logic */
+  .envelope-wrapper {
+    position: relative;
+    width: 320px;
+    height: 220px;
+    z-index: 10;
+    display: none; /* Shown after unlock */
+  }
+
+  .envelope {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ffb7d5;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 20px 50px rgba(255, 77, 148, 0.2);
+    z-index: 2;
+  }
+
+  .envelope::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    border-left: 160px solid transparent;
+    border-right: 160px solid transparent;
+    border-top: 130px solid #ff8cb3;
+    transform-origin: top;
+    transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 4;
+  }
+
+  .card {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 300px;
+    background: white;
+    padding: 30px 20px;
+    border-radius: 20px;
+    text-align: center;
+    transition: 0.8s ease-in-out;
+    opacity: 0;
+    z-index: 1;
+    box-sizing: border-box;
+  }
+
+  .open .envelope::before { transform: rotateX(180deg); z-index: 0; }
+  .open .card { opacity: 1; transform: translateY(-220px); z-index: 6; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+
+  /* Content Styling */
+  .panda-icon { font-size: 60px; margin-bottom: 10px; }
+  .hbd-text { color: var(--primary); font-size: 24px; margin: 0; font-weight: 900; }
+  .love-text { color: #e91e63; font-weight: bold; margin: 10px 0; display: block; }
+  .prayer-box { background: #fff0f5; padding: 15px; border-radius: 15px; font-size: 14px; font-style: italic; color: #555; }
+
+  /* Buttons */
+  .magic-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 5px 15px rgba(255, 77, 148, 0.4);
+  }
+
+  /* Food Choice Interaction */
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+  .food-option {
+    cursor: pointer;
+    background: #fdfdfd;
+    border: 2px solid #eee;
+    border-radius: 15px;
+    padding: 10px;
+    transition: 0.3s;
+  }
+  .food-option:hover { border-color: var(--primary); background: #fff0f5; transform: scale(1.05); }
+  .food-option img { width: 100%; border-radius: 10px; height: 80px; object-fit: cover; }
+
+  /* The Final Reveal (Ultra Glow) */
+  #final-screen {
+    display: none;
+    animation: glowBG 2s infinite alternate;
+    padding: 30px;
+    border-radius: 25px;
+    border: 4px solid gold;
+  }
+
+  @keyframes glowBG {
+    0% { box-shadow: 0 0 20px #fff; }
+    100% { box-shadow: 0 0 40px #ffd700; }
+  }
+
+  .vow-text { font-size: 18px; color: var(--panda-black); font-weight: bold; }
+</style>
+</head>
+<body>
+
+  <div id="lock-screen">
+    <div style="font-size: 80px;">🐼</div>
+    <h2 style="color: #444;">Is it my Panda?</h2>
+    <p style="color: #888;">Feed the Panda to start your day!</p>
+    <div class="bamboo-btn" onclick="unlock()">🎋</div>
+  </div>
+
+  <div class="envelope-wrapper" id="env-wrapper" onclick="openLetter()">
+    <div class="envelope">
+      <div class="card" id="card">
+        
+        <div id="page-letter">
+          <div class="panda-icon">🐼</div>
+          <p class="hbd-text">HAPPY BIRTHDAY!</p>
+          <span class="love-text">I love u so much! ❤️</span>
+          <div class="prayer-box">
+            "I wish we will stay together at the end of our life. I can't think of my future without u. I hope Allah will make you mine."
+          </div>
+          <button class="magic-btn" onclick="goStep2(event)">Our Future Surprise ✨</button>
+        </div>
+
+        <div id="page-choice" style="display:none;">
+          <h2 style="color:var(--primary)">Pick your treat! 😋</h2>
+          <div class="choice-grid">
+            <div class="food-option" onclick="showFinal('meat', event)">
+              <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=300">
+              <p>Meatbox</p>
+            </div>
+            <div class="food-option" onclick="showFinal('wings', event)">
+              <img src="https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300">
+              <p>Wings</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="final-screen">
+          <h2 style="color:gold;">My Vow To You 💍</h2>
+          <p id="vow-msg" class="vow-text"></p>
+          <div style="font-size: 40px; margin-top: 15px;">💋💍🤲✨</div>
+          <p style="font-size: 12px; color: #666; margin-top: 10px;">(This is a promise from my heart)</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function unlock() {
+      document.getElementById('lock-screen').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('lock-screen').style.display = 'none';
+        document.getElementById('env-wrapper').style.display = 'block';
+        startParticles();
+      }, 1000);
+    }
+
+    function openLetter() {
+      document.getElementById('env-wrapper').classList.add('open');
+    }
+
+    function goStep2(e) {
+      e.stopPropagation();
+      document.getElementById('page-letter').style.display = 'none';
+      document.getElementById('page-choice').style.display = 'block';
+    }
+
+    function showFinal(choice, e) {
+      e.stopPropagation();
+      document.getElementById('page-choice').style.display = 'none';
+      const final = document.getElementById('final-screen');
+      const msg = document.getElementById('vow-msg');
+      
+      final.style.display = 'block';
+      
+      if(choice === 'meat') {
+        msg.innerHTML = "You chose the Meatbox! ❤️<br><br>I promise you a <b>Hand Kiss</b>,<br>A warm <b>Meatbox</b> dinner,<br>And a <b>Ring</b> to belong to me forever.";
+      } else {
+        msg.innerHTML = "You chose Wings! ❤️<br><br>I promise you a <b>Forehead Kiss</b>,<br>Spicy <b>Chicken Wings</b>,<br>And a <b>Bracelet</b> to hold your hand always.";
+      }
+    }
+
+    function startParticles() {
+      const icons = ['🎋', '💖', '🐾', '🍗', '✨', '🌸', '💍'];
+      setInterval(() => {
+        const p = document.createElement('div');
+        p.className = 'floating-item';
+        p.innerText = icons[Math.floor(Math.random() * icons.length)];
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        p.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 7000);
+      }, 300);
+    }
+  </script>
+</body>
+</html>
